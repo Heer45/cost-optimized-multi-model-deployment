@@ -1,13 +1,13 @@
 // =============================================================
-// Jenkinsfile — Cost-Optimized Multi-Model Deployment System
+// Jenkinsfile - Cost-Optimized Multi-Model Deployment System
 // =============================================================
 // Declarative CI pipeline for automated testing and Docker build.
 //
 // Pipeline stages:
-//   1. Checkout        — Pull latest code from source control
-//   2. Install Deps    — Install Python dependencies
-//   3. Run Tests       — Execute automated routing/prediction tests
-//   4. Build Docker    — Package the application into a Docker image
+//   1. Checkout        - Pull latest code from source control
+//   2. Install Deps    - Install Python dependencies
+//   3. Run Tests       - Execute automated routing/prediction tests
+//   4. Build Docker    - Package the application into a Docker image
 // =============================================================
 
 pipeline {
@@ -16,6 +16,12 @@ pipeline {
     environment {
         // Name of the Docker image produced by this pipeline
         DOCKER_IMAGE = 'cost-optimized-ml-app'
+
+        // Explicit path to the Python interpreter.
+        // Jenkins runs as a Windows service and does NOT inherit the
+        // interactive user PATH, so bare 'python' is not found.
+        // All Python steps below must use this variable.
+        PYTHON = 'C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python313\\python.exe'
     }
 
     stages {
@@ -39,22 +45,27 @@ pipeline {
         // -------------------------------------------------------
         stage('Install Dependencies') {
             steps {
-               bat '"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m pip install --no-cache-dir -r requirements.txt'
+                bat '"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m pip install --no-cache-dir -r requirements.txt'
             }
         }
+
         // -------------------------------------------------------
         // Stage 3: Run Tests
         // Execute the existing routing and prediction tests.
         // This verifies that SmartRouter, ModelManager, and the
         // trained ML models all work correctly end-to-end.
+        //
+        // NOTE: bare 'python' is intentionally NOT used here.
+        // The full executable path is required because Jenkins
+        // runs as a Windows service without the user PATH.
         // -------------------------------------------------------
         stage('Run Tests') {
             steps {
                 // Smoke-check: verify all core modules can be imported
-                bat 'python -c "import router, model_manager, cost_simulator; print(\'Application imports OK\')"'
+                bat '"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -c "import router, model_manager, cost_simulator; print(\'Application imports OK\')"'
 
                 // Run the full routing and prediction test suite
-                bat 'python test_routing.py'
+                bat '"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" test_routing.py'
             }
         }
 
