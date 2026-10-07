@@ -1,0 +1,83 @@
+# ==============================================================
+# GitHub Actions CI — Cost-Optimized Multi-Model Deployment System
+# Repository: Heer45/cost-optimized-multi-model-deployment
+# ==============================================================
+#
+# Pipeline stages:
+#   1. Checkout            — clone the repository
+#   2. Set up Python 3.13  — install the exact interpreter version
+#   3. Install Dependencies — pip install -r requirements.txt
+#   4. Run Tests           — routing logic + import smoke test
+#   5. Build Docker Image  — prove the Dockerfile builds cleanly
+#
+# The Docker image is NOT pushed to any registry.
+# This workflow is additive; the existing Jenkinsfile is unchanged.
+# ==============================================================
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ----------------------------------------------------------
+      # Step 1: Checkout
+      # Fetch the full repository contents into the runner.
+      # ----------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------------------------
+      # Step 2: Set up Python 3.13
+      # Installs the exact Python version used in production and
+      # in the Dockerfile so test behaviour matches the container.
+      # ----------------------------------------------------------
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # ----------------------------------------------------------
+      # Step 3: Install Dependencies
+      # Install pinned versions from requirements.txt.
+      # Matches the pip install step inside the Dockerfile.
+      # ----------------------------------------------------------
+      - name: Install dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      # ----------------------------------------------------------
+      # Step 4a: Import smoke test
+      # Verify that all core application modules import without
+      # errors — catches missing files or broken imports early.
+      # ----------------------------------------------------------
+      - name: Application import smoke test
+        run: python -c "import router, model_manager, cost_simulator; print('Application imports OK')"
+
+      # ----------------------------------------------------------
+      # Step 4b: Run routing tests
+      # Execute the same test used by the Jenkins pipeline.
+      # Tests SmartRouter, ModelManager, and all three ML models
+      # end-to-end using real Breast Cancer dataset samples.
+      # ----------------------------------------------------------
+      - name: Run routing tests
+        run: python test_routing.py
+
+      # ----------------------------------------------------------
+      # Step 5: Build Docker image
+      # Build the image tagged with the commit SHA for
+      # traceability. The image is NOT pushed to any registry.
+      # This step proves the Dockerfile is always build-ready.
+      # ----------------------------------------------------------
+      - name: Build Docker image
+        run: docker build -t cost-optimized-ml-app:${{ github.sha }} .
