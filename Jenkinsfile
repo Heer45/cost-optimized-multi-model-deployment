@@ -78,8 +78,9 @@ pipeline {
         // -------------------------------------------------------
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% ."
-                bat "docker build -t %DOCKER_IMAGE%:latest ."
+                // Uses the absolute Docker executable path because Jenkins
+                // runs as a Windows service and 'docker' is not on its PATH.
+                bat '"C:\\Users\\Administrator\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t cost-optimized-ml-app:%BUILD_NUMBER% .'
             }
         }
     }
