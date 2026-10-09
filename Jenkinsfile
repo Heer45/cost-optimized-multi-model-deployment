@@ -116,7 +116,7 @@ pipeline {
                             if exist __health_status.txt del __health_status.txt
                             exit /b 0
                         )
-                        timeout /t 5 /nobreak >NUL
+                        powershell -NoProfile -Command "Start-Sleep -Seconds 5"
                     )
                     echo Health check timed out after 60 s. Container logs:
                     "C:\\Users\\Administrator\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" logs ml-app-test-%BUILD_NUMBER%
