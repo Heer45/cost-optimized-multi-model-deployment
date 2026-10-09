@@ -106,19 +106,21 @@ pipeline {
                     setlocal enabledelayedexpansion
                     echo Polling Streamlit health endpoint (timeout: 60 s)...
                     for /L %%i in (1,1,12) do (
-                        curl.exe -s -o NUL -w "%%{http_code}" http://localhost:8502/_stcore/health > __health_status.txt 2>&1
-                        set /p STATUS=<__health_status.txt
+                        set "STATUS=000"
+                        if exist __health_status.txt del __health_status.txt
+                        curl.exe -s -o NUL -w "%%{http_code}" http://localhost:8502/_stcore/health > __health_status.txt 2>NUL
+                        if exist __health_status.txt set /p STATUS=<__health_status.txt
                         echo   Attempt %%i/12 - HTTP !STATUS!
                         if "!STATUS!"=="200" (
                             echo Health check passed on attempt %%i.
-                            del __health_status.txt 2>NUL
+                            if exist __health_status.txt del __health_status.txt
                             exit /b 0
                         )
                         timeout /t 5 /nobreak >NUL
                     )
                     echo Health check timed out after 60 s. Container logs:
                     "C:\\Users\\Administrator\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" logs ml-app-test-%BUILD_NUMBER%
-                    del __health_status.txt 2>NUL
+                    if exist __health_status.txt del __health_status.txt
                     exit /b 1
                 '''
             }
