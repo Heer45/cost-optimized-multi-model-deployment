@@ -81,3 +81,53 @@ jobs:
       # ----------------------------------------------------------
       - name: Build Docker image
         run: docker build -t cost-optimized-ml-app:${{ github.sha }} .
+
+      # ----------------------------------------------------------
+      # Step 6: Run Docker container
+      # Start a detached container from the exact image just built.
+      # Container name is unique per run (uses the commit SHA).
+      # Host port 8502 is used instead of 8501 to avoid conflicts
+      # with any live application already listening on 8501.
+      # ----------------------------------------------------------
+      - name: Run Docker container
+        run: |
+          docker run -d \
+            --name ml-app-test-${{ github.sha }} \
+            -p 8502:8501 \
+            cost-optimized-ml-app:${{ github.sha }}
+
+      # ----------------------------------------------------------
+      # Step 7: Health check
+      # Poll the Streamlit health endpoint every 5 seconds for up
+      # to 60 seconds (12 attempts).  A 200 response means the
+      # app is fully up inside the container.
+      # If the timeout is reached, container logs are printed so
+      # the failure is diagnosable, and the step exits non-zero
+      # to fail the pipeline.
+      # ----------------------------------------------------------
+      - name: Wait for Streamlit health check
+        run: |
+          echo "Polling Streamlit health endpoint (timeout: 60 s)..."
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8502/_stcore/health || true)
+            echo "  Attempt ${i}/12 — HTTP ${STATUS}"
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed on attempt ${i}."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Health check timed out after 60 s. Container logs:"
+          docker logs ml-app-test-${{ github.sha }}
+          exit 1
+
+      # ----------------------------------------------------------
+      # Step 8: Cleanup
+      # Always remove the test container — even if the health
+      # check step above failed — so the runner stays clean.
+      # ----------------------------------------------------------
+      - name: Remove test container
+        if: always()
+        run: |
+          docker stop ml-app-test-${{ github.sha }} || true
+          docker rm   ml-app-test-${{ github.sha }} || true
