@@ -27,9 +27,9 @@ def main():
 
     profiling_results = {}
 
-    print("-" * 60)
+    print("-" * 70)
     print("MODEL PROFILING SCRIPT")
-    print("-" * 60)
+    print("-" * 70)
 
     for name, path in model_paths.items():
         full_path = os.path.join(models_dir, path)
