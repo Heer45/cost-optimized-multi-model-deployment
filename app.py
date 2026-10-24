@@ -30,7 +30,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PATIENTS_FILE = os.path.join(BASE_DIR, "patients.json")
 LATENCY_PROFILE = os.path.join(BASE_DIR, "latency_profile.json")
 
-
+print("hello, world!")
 # ============================================================
 # FEATURE INFORMATION
 # ============================================================
