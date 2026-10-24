@@ -89,7 +89,7 @@ st.html(
     }
 
     .block-container {
-        padding-top: 2rem;
+        padding-top: 4rem;
         padding-bottom: 3rem;
         max-width: 1400px;
     }
