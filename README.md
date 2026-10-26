@@ -100,3 +100,5 @@ GitHub → Jenkins → Checkout → Install Dependencies → Run Tests → Build
 - scikit-learn 1.8.0
 - Docker
 - Jenkins (CI)
+
+CI/CD verification: automated deployment test.
