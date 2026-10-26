@@ -28,7 +28,6 @@ COPY cost_simulator.py .
 COPY patients.py .
 
 # --- Copy data files required at runtime ---
-COPY patients.json .
 COPY latency_profile.json .
 
 # --- Copy trained ML models ---
