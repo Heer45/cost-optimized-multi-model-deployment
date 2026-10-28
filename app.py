@@ -13,10 +13,7 @@ from cost_simulator import CostSimulator
 from model_manager import ModelManager
 from router import SmartRouter
 
-# Jenkins automatic build verification
-# Jenkins automatic build verification
-# Jenkins automatic build verification - test 2
-# Jenkins automatic build verification - test 2
+
 # ============================================================
 # CONFIGURATION
 # ============================================================
